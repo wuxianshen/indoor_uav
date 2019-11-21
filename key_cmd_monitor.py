@@ -2,10 +2,11 @@ import threading
 import logging
 
 class key_cmd_monitor:
-    def __init__(self, exit_event, uav):
+    def __init__(self, exit_event, uav, ext_source = None):
         self.exit_event = exit_event
         self.uav = uav
         self.monitor_thread = threading.Thread(target = self.key_cmd_monitor_loop)
+        self.ext_source = ext_source
 
     def start(self):
         self.monitor_thread.start()
@@ -40,7 +41,10 @@ class key_cmd_monitor:
                 self.uav.request_data_stream()
             if keyboard_cmd == 'pos':
                 logging.info('[CMD] Offboard position control...')
-                self.uav.set_offboard_position_continuously([5, 3, -2, 0, 0, 0])
+                self.uav.set_offboard_position_continuously([1, 1, -1, 0, 0, 0])
+            if keyboard_cmd == 'opti':
+                logging.info('[CMD] External source start...')
+                self.ext_source.start()
             if keyboard_cmd == 'exit':
                 self.exit_event.set()
                 break

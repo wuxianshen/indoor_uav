@@ -7,7 +7,8 @@ class drone_comm_handler:
 
 class drone_serial_handler(drone_comm_handler):
     def __init__(self, type, port, baud):
-        super(drone_comm_handler, self).__init__(type)
+        #super(drone_comm_handler, self).__init__(type)
+        drone_comm_handler.__init__(self, type)
         self.port = port
         self.baud = baud
 
