@@ -16,15 +16,16 @@ class opti_track_source(ext_pos_source):
         self.position = [0, 0, 0, 0, 0, 0]
         self.lock_position = threading.Lock()
 
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind((self.addr, self.port))
+
         self.update_external_pos_switch = False
         self.update_external_pos_thread = threading.Thread(target=self.update_external_position_loop)
 
     def start(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind((self.addr, self.port))
-
-        #self.update_external_pos_switch = True
-        #self.update_external_pos_thread.start()
+        #For isolated test
+        self.update_external_pos_switch = True
+        self.update_external_pos_thread.start()
 
     def stop(self):
         self.update_external_pos_switch = False
@@ -33,7 +34,7 @@ class opti_track_source(ext_pos_source):
 
     def update_position(self, pos_ext):
         '''
-        @ update_position: update external position
+        @ update_position: update external position one time
         :param pos_ext: the pos_ext to be updated
         :return: updated pos_ext
         '''
@@ -44,13 +45,20 @@ class opti_track_source(ext_pos_source):
         pos_ext[2] = -0.2
         '''
         # optitrack
-        #'''
-        self.lock_position.acquire()
-        pos_ext = self.position
-        # print(self.position)
-        self.lock_position.release()
-        #'''
-        return pos_ext
+        self.optitrack_data, self.optitrack_addr = self.socket.recvfrom(256)
+        if not self.optitrack_data:
+            logging.error('[OptiTrack] No data!')
+            return pos_ext
+        new_position = self.optitrack_data.split(b',')
+        for idx in range(6):
+            new_position[idx] = float(new_position[idx])
+        '''
+        logging.info('[MOCAP] {0} {1} {2} {3} {4} {5}'.format(
+            new_position[0], new_position[1],
+            new_position[2], new_position[3],
+            new_position[4], new_position[5]))
+        '''
+        return new_position
 
     def update_external_position_loop(self):
         logging.info('Start update optitrack position thread...')
@@ -76,24 +84,6 @@ class opti_track_source(ext_pos_source):
                              self.position[4], self.position[5]))
         logging.info('Stop update optitrack position thread...')
 
-    def update_external_position(self):
-        while self.update_external_pos_switch:
-            self.optitrack_data, self.optitrack_addr = self.socket.recvfrom(256)
-            if not self.optitrack_data:
-                logging.error('no data!')
-                continue
-            new_position = self.optitrack_data.split(b',')
-            for idx in range(6):
-                new_position[idx] = float(new_position[idx])
-
-            self.lock_position.acquire()
-            self.position = new_position
-            self.lock_position.release()
-
-            logging.info('[MOCAP] {0} {1} {2} {3} {4} {5}'.format(
-                         self.position[0], self.position[1],
-                         self.position[2], self.position[3],
-                         self.position[4], self.position[5]))
 
 if __name__ == '__main__':
     # OptiTrack network, own IP (used for opti to send pos feedback)

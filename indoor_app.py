@@ -29,31 +29,27 @@ if __name__ == '__main__':
     main_exit_event =  threading.Event()
 
     # External position source init
-    #opti_track = opti_track_source(['172.20.111.128', 31500])
     # OptiTrack network, own IP (used for opti to send pos feedback)
-    #opti_track = opti_track_source(['192.168.50.129', 31500])
-    #opti_track.start()
+    # opti_track = opti_track_source(['192.168.50.129', 31500])
+    opti_track = opti_track_source(['127.0.0.1', 31500]) # local test
 
     # UAV init
+    # Through UDP
     # udp_drone = drone_udp_handler('udp', 'udp:localhost:14540') # local simulation
+    udp_drone = drone_udp_handler('udp', '192.168.2.129:14540') #
+    # udp_drone = drone_udp_handler('udp', '192.168.50.129:8899')  # USR Wifi
+    drone_fly = indoor_drone.indoor_drone(udp_drone, external_pos_source = opti_track)
 
-    # udp_drone = drone_udp_handler('udp', '192.168.2.129:14540') #
-    udp_drone = drone_udp_handler('udp', '192.168.50.129:8899')  #
-    #drone_fly = indoor_drone.indoor_drone(udp_drone, external_pos_source=opti_track)
-    drone_fly = indoor_drone.indoor_drone(udp_drone)
-
+    # Through Serial
     # serial_drone = drone_serial_handler('serial', 'COM15', 57600)
-    # serial_drone = drone_serial_handler('serial', 'COM9', 115200) # USR Radio
+    # serial_drone = drone_serial_handler('serial', 'COM9', 115200) # USR Wifi
     # drone_fly = indoor_drone.indoor_drone(serial_drone, external_pos_source=opti_track)
 
     # KEY : Start Keyboard Command Monitor
-    #key_monitor = key_cmd_monitor.key_cmd_monitor(main_exit_event, drone_fly, opti_track)
-    key_monitor = key_cmd_monitor.key_cmd_monitor(main_exit_event, drone_fly)
+    key_monitor = key_cmd_monitor.key_cmd_monitor(main_exit_event, drone_fly, opti_track)
     key_monitor.start()
 
     main_exit_event.wait(600)
-
-    #opti_track.stop()
 
     logging.info('[Main] Exit...')
     sys.exit(0)

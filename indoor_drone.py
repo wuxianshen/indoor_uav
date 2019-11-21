@@ -34,7 +34,7 @@ class indoor_drone:
         self.external_pos_source = external_pos_source
         self.pos_push_thread = threading.Thread(target=self.push_external_position_loop)
 
-        self.opti_handler = opti_track_source(['192.168.50.129', 31500])
+        #self.opti_handler = opti_track_source(['192.168.50.129', 31500])
 
     def offboard_position_control_loop(self):
         '''
@@ -231,39 +231,16 @@ class indoor_drone:
 
     def push_external_position_loop(self):
         logging.info('[UAV] Start pushing external position to UAV...')
-        pos_cnt = 0
         while True:
-            #self.update_external_postion()
-            #self.mav_send_external_position()
-            #time.sleep(0.1)
-            # Get OptiTrack Position
-            self.opti_handler.optitrack_data, self.opti_handler.optitrack_addr = self.opti_handler.socket.recvfrom(256)
-            if not self.opti_handler.optitrack_data:
-                logging.error('no data!')
-                continue
-            self.position = self.opti_handler.optitrack_data.split(b',')
-            for idx in range(6):
-                self.position[idx] = float(self.position[idx])
-
-            pos_cnt = pos_cnt + 1
-            if pos_cnt < 10:
-                logging.info('[MOCAP] {0} {1} {2} {3} {4} {5}'.format(
-                    self.position[0], self.position[1],
-                    self.position[2], self.position[3],
-                    self.position[4], self.position[5]))
-
-            # Send MavLink Position
-            self.the_connection.mav.vision_position_estimate_send(self.system_id, self.position[0],
-                                                                  self.position[1], self.position[2],
-                                                                  self.position[3], self.position[4],
-                                                                  self.position[5])
+            self.update_external_postion()
+            self.mav_send_external_position()
+            time.sleep(0.0005)
 
     def update_external_postion(self):
         '''
         @ update_external_postion: update external position
         '''
         # cur_ned_pos = self.get_current_local_ned_position()
-
         self.lock_position.acquire()
         # external_pos_source should realize the update_position method
         self.position_external = self.external_pos_source.update_position(self.position_external)

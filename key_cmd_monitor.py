@@ -42,9 +42,12 @@ class key_cmd_monitor:
             if keyboard_cmd == 'pos':
                 logging.info('[CMD] Offboard position control...')
                 self.uav.set_offboard_position_continuously([1, 1, -1, 0, 0, 0])
-            if keyboard_cmd == 'opti':
+            if keyboard_cmd == 'opti-start':
                 logging.info('[CMD] External source start...')
                 self.ext_source.start()
+            if keyboard_cmd == 'opti-stop':
+                logging.info('[CMD] External source start...')
+                self.ext_source.stop()
             if keyboard_cmd == 'exit':
                 self.exit_event.set()
                 break
