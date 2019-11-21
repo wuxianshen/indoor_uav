@@ -67,9 +67,6 @@ class indoor_drone:
         if self.external_pos_source != None:
             self.pos_push_thread.start()
 
-        self.opti_handler.start()
-        self.pos_push_thread.start()
-
     def arm(self):
         self.the_connection.mav.command_long_send(
             self.the_connection.target_system,  # 1# autopilot system id

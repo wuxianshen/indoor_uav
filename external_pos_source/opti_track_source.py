@@ -39,11 +39,12 @@ class opti_track_source(ext_pos_source):
         :return: updated pos_ext
         '''
         # for local test
-        '''
+        #'''
         pos_ext[0] = 1
         pos_ext[1] = 1
         pos_ext[2] = -0.2
-        '''
+        return pos_ext
+        #'''
         # optitrack
         self.optitrack_data, self.optitrack_addr = self.socket.recvfrom(256)
         if not self.optitrack_data:

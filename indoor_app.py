@@ -35,8 +35,8 @@ if __name__ == '__main__':
 
     # UAV init
     # Through UDP
-    # udp_drone = drone_udp_handler('udp', 'udp:localhost:14540') # local simulation
-    udp_drone = drone_udp_handler('udp', '192.168.2.129:14540') #
+    udp_drone = drone_udp_handler('udp', 'udp:localhost:14540') # local simulation
+    # udp_drone = drone_udp_handler('udp', '192.168.2.129:14540') #
     # udp_drone = drone_udp_handler('udp', '192.168.50.129:8899')  # USR Wifi
     drone_fly = indoor_drone.indoor_drone(udp_drone, external_pos_source = opti_track)
 
