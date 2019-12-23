@@ -40,8 +40,19 @@ class key_cmd_monitor:
                 logging.info('[CMD] Offboard position control...')
                 self.uav.request_data_stream()
             if keyboard_cmd == 'pos':
-                logging.info('[CMD] Offboard position control...')
-                self.uav.set_offboard_position_continuously([1, 1, -1, 0, 0, 0])
+                logging.info('[CMD] Please input target position [x y z]')
+                target_pos_str = input()
+                target_pos = list(map(float, target_pos_str.split()))
+                logging.info('[CMD] Offboard position control target', target_pos)
+                if len(target_pos) != 3:
+                    logging.info('Wrong target length.')
+                    continue
+                if target_pos[2] < 0:
+                    logging.info('Wrong target height.')
+                    continue
+                target_pos[2] = target_pos[2] * -1
+                target_pos = target_pos + [0, 0, 0]
+                self.uav.set_offboard_position_continuously(target_pos)
             if keyboard_cmd == 'opti-start':
                 logging.info('[CMD] External source start...')
                 self.ext_source.start()

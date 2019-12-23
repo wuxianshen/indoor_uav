@@ -98,15 +98,17 @@ class indoor_drone:
             self.offboard_position_thread.join()
 
         timeBegin = time.time()
-        landing_position_x = self.position[0]
-        landing_position_y = self.position[1]
+        cur_pos = self.get_current_local_ned_position()
+        landing_position_x = cur_pos[0]
+        landing_position_y = cur_pos[1]
         while True:
             timeNow = time.time()
             timeFromBegin = timeNow - timeBegin
-            self.offboard_set_target_position(landing_position_x, landing_position_y, self.position[2] + 0.1 * timeFromBegin)
+            cur_pos = self.get_current_local_ned_position()
+            self.offboard_set_target_position(landing_position_x, landing_position_y, cur_pos[2] + 0.1 * timeFromBegin)
             if(self.position[2] > -0.01):
                 logging.info('[UAV] Land finished...')
-                #break
+                break
 
     def set_offboard_position_continuously(self, position):
         '''
