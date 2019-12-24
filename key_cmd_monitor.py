@@ -43,7 +43,8 @@ class key_cmd_monitor:
                 logging.info('[CMD] Please input target position [x y z]')
                 target_pos_str = input()
                 target_pos = list(map(float, target_pos_str.split()))
-                logging.info('[CMD] Offboard position control target', target_pos)
+                logging.info('[CMD] Offboard position control target %f %f %f'.format(target_pos[0],
+                             target_pos[1], target_pos[2]))
                 if len(target_pos) != 3:
                     logging.info('Wrong target length.')
                     continue
