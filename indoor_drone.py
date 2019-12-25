@@ -178,11 +178,11 @@ class indoor_drone:
         '''
         # Update LOCAL_POSITION_NED
         self.the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=True)
-        '''
+        #'''
         logging.info('[TELEMETRY] Local NED pos {0} {1} {2}'.format(self.the_connection.messages['LOCAL_POSITION_NED'].x,
                self.the_connection.messages['LOCAL_POSITION_NED'].y,
                self.the_connection.messages['LOCAL_POSITION_NED'].z))
-        '''
+        #'''
         return [self.the_connection.messages['LOCAL_POSITION_NED'].x,
                 self.the_connection.messages['LOCAL_POSITION_NED'].y,
                 self.the_connection.messages['LOCAL_POSITION_NED'].z,

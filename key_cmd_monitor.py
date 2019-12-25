@@ -1,5 +1,6 @@
 import threading
 import logging
+import time
 
 class key_cmd_monitor:
     def __init__(self, exit_event, uav, ext_source = None):
@@ -24,6 +25,10 @@ class key_cmd_monitor:
                 logging.info('[CMD] Disarm uav...')
                 self.uav.disarm()
             if keyboard_cmd == 'offboard':
+                '''
+                Note: We must push local target position to pixhawk before switch to Offboard model.
+                      Use 'pos' command to set continuously target position. 
+                '''
                 logging.info('[CMD] Switch uav to offboard...')
                 self.uav.set_mode_to_offboard()
             if keyboard_cmd == 'land':
@@ -59,6 +64,24 @@ class key_cmd_monitor:
                 self.ext_source.start()
             if keyboard_cmd == 'opti-stop':
                 logging.info('[CMD] External source start...')
+                self.ext_source.stop()
+            if keyboard_cmd == 'square':
+                logging.info('[CMD] Move square...')
+                cnt = 0
+                while cnt < 5:
+                    target_pos = [1, 0, -1, 0, 0, 0]
+                    self.uav.set_offboard_position_continuously(target_pos)
+                    time.sleep(7)
+                    target_pos = [1, 1, -1, 0, 0, 0]
+                    self.uav.set_offboard_position_continuously(target_pos)
+                    time.sleep(7)
+                    target_pos = [0, 1, -1, 0, 0, 0]
+                    self.uav.set_offboard_position_continuously(target_pos)
+                    time.sleep(7)
+                    target_pos = [0, 0, -1, 0, 0, 0]
+                    self.uav.set_offboard_position_continuously(target_pos)
+                    time.sleep(7)
+                    cnt += 1
                 self.ext_source.stop()
             if keyboard_cmd == 'exit':
                 self.exit_event.set()

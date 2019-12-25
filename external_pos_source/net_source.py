@@ -19,10 +19,15 @@ class net_source(ext_pos_source):
         self.lock_position = threading.Lock()
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.addr, self.port))
 
         self.update_external_pos_switch = False
         self.update_external_pos_thread = threading.Thread(target=self.update_external_position_loop)
+
+        self.source_type = 'gps-rad'
+
+        self.origin_set = False
 
     def start(self):
         #For isolated test
@@ -35,7 +40,16 @@ class net_source(ext_pos_source):
         time.sleep(0.5)
         self.socket.close()
 
+    def set_net_source_type(self, type = 'gazebo'):
+        if type == 'gazebo':
+            self.source_type = 'gps-rad'
+        elif type == 'mocap':
+            self.source_type = 'pos-ned'
+        else:
+            logging.info('Wrong net source type %s'.format(type))
+
     def set_origin_gps(self):
+        self.origin_set = True
         gps_data, gps_addr = self.socket.recvfrom(256)
         gps_data = gps_data.split(b' ')
         cur_gps = [0, 0, 0]
@@ -59,13 +73,23 @@ class net_source(ext_pos_source):
         :param pos_ext: the pos_ext to be updated
         :return: updated pos_ext
         '''
+
+        if not self.origin_set and (self.source_type == 'gps-rad'):
+            # We assume the net source has already been connected
+            self.set_origin_gps() # set origin gps point as a reference point
+
         gps_data, gps_addr = self.socket.recvfrom(256)
         gps_data = gps_data.split(b' ')
         cur_gps = [0, 0, 0]
         for idx in range(3):
             cur_gps[idx] = float(gps_data[idx])
 
-        return self.get_ned_pos(cur_gps) + [0, 0, 0]
+        ret = [0, 0, 0, 0, 0, 0]
+        if self.source_type == 'gps-rad':
+            ret = self.get_ned_pos(cur_gps) + [0, 0, 0]
+        elif self.source_type == 'pos-ned':
+            ret = cur_gps + [0, 0, 0]
+        return ret
 
     def update_external_position_loop(self):
         logging.info('Start update optitrack position thread...')
@@ -77,11 +101,13 @@ class net_source(ext_pos_source):
             for idx in range(3):
                 cur_gps[idx] = float(gps_data[idx])
 
-            #print(self.get_ned_pos(cur_gps))
-            #continue
-
             self.lock_position.acquire()
-            self.position = self.get_ned_pos(cur_gps) + [0, 0, 0]
+            if self.source_type == 'gps-rad':
+                self.position = self.get_ned_pos(cur_gps) + [0, 0, 0]
+            elif self.source_type == 'pos-ned':
+                self.position = cur_gps + [0, 0, 0]
+            else:
+                pass
             self.lock_position.release()
 
             pos_cnt = pos_cnt + 1
@@ -95,7 +121,7 @@ class net_source(ext_pos_source):
 
 if __name__ == '__main__':
     # OptiTrack network, own IP (used for opti to send pos feedback)
-    net_src_handler = net_source(['127.0.0.1', 13245])
+    net_src_handler = net_source(['127.0.0.1', 23245])
     net_src_handler.start()
     while True:
         net_src_handler.lock_position.acquire()

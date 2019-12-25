@@ -33,14 +33,20 @@ if __name__ == '__main__':
     # OptiTrack network, own IP (used for opti to send pos feedback)
     # opti_track = opti_track_source(['192.168.50.129', 31500])
     # opti_track = opti_track_source(['127.0.0.1', 31500]) # local test
-    net_source_handler = net_source(['127.0.0.1', 23245]) # gazebo simulation
-    net_source_handler.set_origin_gps()
+    net_source_handler = net_source(['127.0.0.1', 23245])
+    net_source_handler.set_net_source_type(type='gazebo') # gazebo simulation
+    # net_source_handler.set_net_source_type(type='mocap') # Use mocap transfer
 
     # UAV init
-    # Through UDP
+    '''
+    Through UDP
+    Note: When use USR wifi, pymavlink needs to bind local host port,
+          and USR Wifi module serves as a wifi to serial, then connect to the IP actively.
+    Note: UAV will send connection broadcast to the ground station actively.
+    '''
     udp_drone = drone_udp_handler('udp', 'udp:localhost:14540') # local simulation
     # udp_drone = drone_udp_handler('udp', '192.168.2.129:14540') #
-    # udp_drone = drone_udp_handler('udp', '192.168.50.129:8899')  # USR Wifi
+    # udp_drone = drone_udp_handler('udp', '192.168.50.159:8899')  # USR Wifi
     # drone_fly = indoor_drone.indoor_drone(udp_drone, external_pos_source = opti_track)
     drone_fly = indoor_drone.indoor_drone(udp_drone, external_pos_source=net_source_handler)
 
